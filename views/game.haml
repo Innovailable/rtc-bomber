@@ -1,0 +1,8 @@
+%html
+  %head
+    %title rtc-bomber
+    %script(src="js/bomber.js"))
+  %body(onload="init()")
+    %h1 rtc-bomber
+    %canvas#background(style="position: absolute; z-index: 1")
+    %canvas#draw(style="position: absolute; z-index: 2")
