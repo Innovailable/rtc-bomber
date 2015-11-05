@@ -11,6 +11,6 @@ app.engine 'haml', require('haml-coffee').__express
 app.set('views', './views')
 
 app.get '/', (req, res) ->
-  res.render('game.haml')
+  res.render('index.haml')
 
 app.listen(3000)

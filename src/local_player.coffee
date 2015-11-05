@@ -42,3 +42,7 @@ class exports.LocalPlayer
   wantsBomb: () ->
     return @want_bomb
 
+
+  kill: () ->
+    #alert('You exploded!')
+

@@ -1,6 +1,12 @@
 seedrandom = require('seedrandom')
 {EventEmitter} = require('events')
 
+each = (array, cb) ->
+  if array.length > 0
+    for index in [array.length-1..0]
+      del = () -> array.splice(index, 1)
+      cb(array[index], del)
+
 player_colors = [
   'rgb(255, 0, 0)'
   'rgb(0, 255, 0)'
@@ -16,10 +22,17 @@ class Game extends EventEmitter
 
   # physics
 
+  # ms one tick takes
   TICK_TIME = 20
+  # speed of players
   BASE_SPEED = 1 / 10
+  # how far to slide sideways on collision
   SLIDE_PART = 0.4
+  # grace radius of explosion hits
+  EXPLOSION_GRACE = 0.1
+  # how long does a bomb last?
   BOMB_TICKS = 75
+  # how long does an explosion last?
   EXPLOSION_TICKS = 15
 
   # constants
@@ -56,20 +69,30 @@ class Game extends EventEmitter
 
 
   addPlayer: (player) ->
-    @players.push({
-      x: 3
-      y: 3
-      bombs: 1
-      splash: 1
-      color: player_colors[@players.length]
-      player: player
-    })
+    player.x = 3
+    player.y = 3
+    player.bombs = 1
+    player.splash = 2
+    player.color = player_colors[@players.length]
+
+    @players.push(player)
+
+
+  collision: (x, y) ->
+    if @field[y][x]
+      return true
+
+    for bomb in @bombs
+      if bomb.x == x and bomb.y == y
+        return true
+
+    return false
 
 
   tick: () ->
     field_changed = false
 
-    # PLAYERS
+    # PLAYER INPUT
 
     for player in @players
       # this is a helper which allows movement in all directions
@@ -114,21 +137,21 @@ class Game extends EventEmitter
         else
           # well ... we bounced!
 
-      direction = player.player.tick()
+      direction = player.tick()
 
       switch direction
         when Game.MOVE_UP
-          move('y', 'x', -1, (a, b) => @field[a][b])
+          move('y', 'x', -1, (a, b) => @collision(b, a))
         when Game.MOVE_RIGHT
-          move('x', 'y', 1, (a, b) => @field[b][a])
+          move('x', 'y', 1, (a, b) => @collision(a, b))
         when Game.MOVE_DOWN
-          move('y', 'x', 1, (a, b) => @field[a][b])
+          move('y', 'x', 1, (a, b) => @collision(b, a))
         when Game.MOVE_LEFT
-          move('x', 'y', -1, (a, b) => @field[b][a])
+          move('x', 'y', -1, (a, b) => @collision(a, b))
 
       # spawn bombs
 
-      if player.player.wantsBomb() and player.bombs > 0
+      if player.wantsBomb() and player.bombs > 0
         x = Math.round(player.x)
         y = Math.round(player.y)
 
@@ -141,7 +164,6 @@ class Game extends EventEmitter
             y: y
           }
 
-          @field[y][x] = Game.GRID_BOMB
           @bombs.push(bomb)
 
           player.bombs -= 1
@@ -153,10 +175,6 @@ class Game extends EventEmitter
         bomb = @bombs[index]
 
         if bomb.ticks <= 0
-          # clear tile
-
-          @field[bomb.y][bomb.x] = Game.GRID_OPEN
-
           # clear rocks
 
           explode = (x, y) =>
@@ -176,16 +194,21 @@ class Game extends EventEmitter
               x += x_dir
               y += y_dir
 
+              done = false
+
               switch @field[y][x]
                 when Game.GRID_ROCK
                   @field[y][x] = Game.GRID_OPEN
                   explode(x, y)
                   field_changed = true
-                  break
+                  done = true
                 when Game.GRID_WALL
-                  break
+                  done = true
                 else
                   explode(x, y)
+
+              if done
+                break
 
           # give player the bomb back
 
@@ -209,6 +232,42 @@ class Game extends EventEmitter
           @explosions.splice(index, 1)
         else
           explosion.ticks -= 1
+
+    # EXPLOSION HITS
+
+    if @players.length and @explosions.length
+      for index in [@players.length-1..0]
+        player = @players[index]
+
+        # where would we be hit?
+
+        matches = []
+
+        x = Math.floor(player.x)
+        y = Math.floor(player.y)
+        x_drift = player.x - x
+        y_drift = player.y - y
+
+        if x_drift < 1 - EXPLOSION_GRACE
+          if y_drift < 1 - EXPLOSION_GRACE
+            matches.push([x, y])
+          if y_drift > EXPLOSION_GRACE
+            matches.push([x, y + 1])
+        if x_drift > EXPLOSION_GRACE
+          if y_drift < 1 - EXPLOSION_GRACE
+            matches.push([x + 1, y])
+          if y_drift > EXPLOSION_GRACE
+            matches.push([x + 1, y + 1])
+
+        # check against explosions
+
+        for explosion in @explosions
+          for match in matches
+            if explosion.x == match[0] and explosion.y == match[1]
+              console.log('boom!')
+              player.kill()
+              @players.splice(index, 1)
+              break
 
     # EVENTS
 

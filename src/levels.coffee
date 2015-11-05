@@ -16,7 +16,7 @@ module.exports = {
             line[x] = Game.GRID_WALL
           else if x % 2 == 0 and y % 2 == 0
             line[x] = Game.GRID_WALL
-          else if rng() < 0.5
+          else if rng() < 0.7
             line[x] = Game.GRID_ROCK
           else
             line[x] = Game.GRID_OPEN
