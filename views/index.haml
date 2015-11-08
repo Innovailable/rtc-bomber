@@ -2,7 +2,16 @@
   %head
     %title rtc-bomber
     %script(src="js/bomber.js"))
-  %body(onload="init()")
+  %body
     %h1 rtc-bomber
-    %canvas#background(style="position: absolute; z-index: 1")
-    %canvas#draw(style="position: absolute; z-index: 2")
+    #login
+      Name:
+      %input#name(type="text" value="horst")
+      %input#join(type="button" value="Join")
+    #users
+      Players:
+      %ul#user_list
+      %input#start(type="button" value="Start")
+    #game
+      %canvas#background(style="position: absolute; z-index: 1")
+      %canvas#draw(style="position: absolute; z-index: 2")

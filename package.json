@@ -17,9 +17,12 @@
     "browserify-shim": "^3.8.11",
     "coffee-script": "^1.10.0",
     "coffeeify": "^1.1.0",
+    "easy-signaling": "^1.0.1",
+    "envify": "^3.4.0",
     "express": "^4.13.3",
+    "express-ws": "^1.0.0-rc.2",
     "haml-coffee": "^1.14.1",
-    "rtc-lib": "0.0.1",
+    "rtc-lib": "0.0.2",
     "seedrandom": "^2.4.2",
     "uglifyjs": "^2.4.10"
   },

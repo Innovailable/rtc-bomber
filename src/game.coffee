@@ -15,11 +15,6 @@ player_colors = [
 
 class Game extends EventEmitter
 
-  # configuration
-
-  WIDTH = 25
-  HEIGHT = 17
-
   # physics
 
   # ms one tick takes
@@ -27,7 +22,7 @@ class Game extends EventEmitter
   # speed of players
   BASE_SPEED = 1 / 10
   # how far to slide sideways on collision
-  SLIDE_PART = 0.4
+  SLIDE_PART = 0.5
   # grace radius of explosion hits
   EXPLOSION_GRACE = 0.1
   # how long does a bomb last?
@@ -40,8 +35,7 @@ class Game extends EventEmitter
   @GRID_OPEN: 0
   @GRID_ROCK: 1
   @GRID_WALL: 2
-  @GRID_BOMB: 3
-  @GRID_SPAWN: 4
+  @GRID_SPAWN: 3
 
   @MOVE_NONE: 0
   @MOVE_UP: 1
@@ -59,7 +53,13 @@ class Game extends EventEmitter
     @field = level.field(@rng)
     @spawns = []
 
+    @width = @field[0].length
+    @height = @field.length
+
     for line, y in @field
+      if line.length != @width
+        throw new Error("Invalid field")
+
       for cell, x in line
         if cell == Game.GRID_SPAWN
           line[x] = Game.GRID_OPEN
@@ -69,8 +69,13 @@ class Game extends EventEmitter
 
 
   addPlayer: (player) ->
-    player.x = 3
-    player.y = 3
+    if @spawns.length == 0
+      throw new Error("Too many players!")
+
+    spawn = @spawns.shift()
+    player.x = spawn.x
+    player.y = spawn.y
+
     player.bombs = 1
     player.splash = 2
     player.color = player_colors[@players.length]
@@ -137,7 +142,8 @@ class Game extends EventEmitter
         else
           # well ... we bounced!
 
-      direction = player.tick()
+      direction = player.input()
+      player.direction = direction
 
       switch direction
         when Game.MOVE_UP
@@ -274,6 +280,6 @@ class Game extends EventEmitter
     if field_changed
       @emit('field_changed')
 
-    @emit('players_moved')
+    @emit('ticked')
 
 exports.Game = Game

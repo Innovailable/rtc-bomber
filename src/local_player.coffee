@@ -35,7 +35,7 @@ class exports.LocalPlayer
         @want_bomb = false
 
 
-  tick: () ->
+  input: () ->
     return @keys_pressed[0]
 
 

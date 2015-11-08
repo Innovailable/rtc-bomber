@@ -20,7 +20,7 @@ clean:
 
 $(BUNDLE): $(SOURCES) Makefile
 	@mkdir -p `dirname $@`
-	node_modules/.bin/browserify -c 'coffee -sc' --extension=".coffee" -s rtc-bomber -d $(MAIN_SRC) -o $@
+	node_modules/.bin/browserify --extension=".coffee" -t coffeeify -t envify -s rtc-bomber -d $(MAIN_SRC) -o $@
 
 out/%.html: views/%.haml Makefile
 	@mkdir -p `dirname $@`
