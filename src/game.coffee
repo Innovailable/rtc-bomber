@@ -76,7 +76,7 @@ class Game extends EventEmitter
     player.x = spawn.x
     player.y = spawn.y
 
-    player.bombs = 1
+    player.bombs = 2
     player.splash = 2
     player.color = player_colors[@players.length]
 
@@ -108,13 +108,21 @@ class Game extends EventEmitter
 
         # round to the tile we are moving to in direction `a`
         round = (i) ->
-          if direction == 1
-            return Math.floor(i) + 1
+          floor = Math.floor(i)
+
+          if direction == 1 and i != floor
+            return floor + 1
           else
-            return Math.floor(i)
+            return floor
 
         # which tile are we moving on?
         new_round_a = round(new_a)
+        old_round_a = round(player[a_id])
+
+        # collision cannot happen unless we change tiles
+        if new_round_a == old_round_a
+          player[a_id] = new_a
+          return
 
         # which tiles could be in the way?
         floor_b = Math.floor(player[b_id])
@@ -161,7 +169,7 @@ class Game extends EventEmitter
         x = Math.round(player.x)
         y = Math.round(player.y)
 
-        if @field[y][x] == Game.GRID_OPEN
+        if not @collision(x, y)
           bomb = {
             player: player
             ticks: BOMB_TICKS
