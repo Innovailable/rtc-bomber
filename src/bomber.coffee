@@ -17,7 +17,7 @@ data_channel_conf = {
 class Bomber
 
   constructor: (room, @background, @draw) ->
-    global.room =@room = new rtc.Room(@signaling_url(room), {auto_connect: false})
+    global.room =@room = new rtc.Room(@signaling_url(room), {auto_connect: false, stun: 'stun:stun.palava.tv'})
     @peers = {}
 
 
