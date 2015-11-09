@@ -7,12 +7,6 @@ each = (array, cb) ->
       del = () -> array.splice(index, 1)
       cb(array[index], del)
 
-player_colors = [
-  'rgb(255, 0, 0)'
-  'rgb(0, 255, 0)'
-  'rgb(0, 0, 255)'
-]
-
 class Game extends EventEmitter
 
   # physics
@@ -78,7 +72,7 @@ class Game extends EventEmitter
 
     player.bombs = 2
     player.splash = 2
-    player.color = player_colors[@players.length]
+    player.color = @players.length
 
     @players.push(player)
 

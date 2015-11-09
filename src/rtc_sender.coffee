@@ -6,7 +6,7 @@ class exports.RtcSender
 
   send: () ->
     # dimensions + field + player amount + players
-    buf = new ArrayBuffer(2 + @game.width * @game.height + 1 + @game.players.length * 9)
+    buf = new ArrayBuffer(2 + @game.width * @game.height + 1 + @game.players.length * 10)
     view = new Uint8Array(buf)
 
     index = 0
@@ -45,6 +45,7 @@ class exports.RtcSender
       data_view.setFloat32(0, player.x)
       data_view.setFloat32(4, player.y)
       view[index++] = player.direction
+      view[index++] = player.color
 
     # send out
 

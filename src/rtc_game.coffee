@@ -70,7 +70,7 @@ class exports.RtcGame extends EventEmitter
           x: data_view.getFloat32(0)
           y: data_view.getFloat32(4)
           direction: view[index++]
-          color: player_colors[player_num]
+          color: view[index++]
         })
 
     @emit('ticked')
