@@ -1,4 +1,3 @@
-$ = require('jquery-browserify')
 rtc = require('rtc-lib')
 
 {Game} = require('./game')
@@ -14,7 +13,7 @@ data_channel_conf = {
   ordered: false
 }
 
-class Bomber
+class exports.Bomber
 
   constructor: (room, @background, @draw) ->
     global.room =@room = new rtc.Room(@signaling_url(room), {auto_connect: false, stun: 'stun:stun.palava.tv'})
@@ -44,12 +43,14 @@ class Bomber
       id = peer.signaling.id
 
       peer.on 'message', (msg) =>
-        switch msg
+        switch msg.type
           when 'start'
             if not @game?
               @start()
 
           when 'connect'
+            @room.local.status('playing', true)
+
             peer.addDataChannel(data_channel_conf).then (channel) =>
               channel.connect().then () =>
                 player = new LocalPlayer()
@@ -88,6 +89,8 @@ class Bomber
     [min_id, min_peer] = @minPeer()
 
     if min_id == null or @room.signaling.id < min_id
+      @room.local.status('playing', true)
+
       # create game
 
       @game = new Game(levels.simple, @room.signaling.id)
@@ -107,7 +110,7 @@ class Bomber
 
         channel_promises.push(channel_p)
 
-        peer.message('connect')
+        peer.message({type: 'connect'})
         peer.connect()
 
       # wait for channels to be established
@@ -117,23 +120,6 @@ class Bomber
         @render = new Render(@background[0], @draw[0], @game)
 
     else
-      min_peer.message('start')
-
-
-$ () ->
-  bomber = new Bomber("1234test", $('#background'), $('#draw'))
-
-  $('#start').attr('disabled', true)
-
-  $('#join').click () ->
-    $('#login input').attr('disabled', true)
-
-    bomber.join($('#name').val(), $('#user_list')).then () ->
-      $('#start').attr('disabled', false)
-
-  $('#start').click () ->
-    bomber.start()
-    $('#start').attr('disabled', true)
-    $('#draw').focus()
+      min_peer.message({type: 'start'})
 
 

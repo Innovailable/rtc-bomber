@@ -2,7 +2,12 @@ class exports.RtcInput
 
   constructor: (@channel, @player) ->
     @count = 0
-    setInterval(@send.bind(@), 50)
+
+    interval = setInterval(@send.bind(@), 50)
+
+    @channel.on 'closed', () ->
+      console.log 'disconnected'
+      clearInterval(interval)
 
 
   send: () ->
@@ -13,5 +18,6 @@ class exports.RtcInput
     view[1] = @player.input()
     view[2] = @player.wantsBomb()
 
-    @channel.send(buf)
+    @channel.send(buf).catch (err) ->
+      console.log('unable to send')
 

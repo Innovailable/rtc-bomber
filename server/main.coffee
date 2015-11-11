@@ -9,7 +9,7 @@ browserify.settings('transform', [require('coffeeify'), require('envify')])
 browserify.settings('extensions', ['.coffee'])
 browserify.settings('grep', /\.coffee$|\.js$/)
 
-app.get('/js/bomber.js', browserify(__dirname + '/../src/bomber.coffee'))
+app.get('/js/bomber.js', browserify(__dirname + '/../src/main.coffee'))
 
 # signaling
 

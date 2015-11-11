@@ -3,7 +3,7 @@ VIEWS=$(wildcard views/*.haml)
 
 HTML_FILES=$(VIEWS:views/%.haml=out/%.html)
 
-MAIN_SRC=src/bomber.coffee
+MAIN_SRC=src/main.coffee
 BUNDLE=out/js/bomber.js
 BUNDLE_MIN=out/js/bomber.min.js
 

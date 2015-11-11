@@ -4,6 +4,17 @@ class exports.RtcSender
     @game.on 'ticked', () =>
       @send()
 
+    for channel in @channels
+      channel.on 'closed', () =>
+        console.log 'disconnected'
+        index = @channels.indexOf(channel)
+        @channels.splice(index, 1)
+
+
+  addChannel: (channel) ->
+    @channels.push(channel)
+
+
   send: () ->
     # dimensions + field + player amount + players
     buf = new ArrayBuffer(2 + @game.width * @game.height + 1 + @game.players.length * 10)
@@ -50,5 +61,6 @@ class exports.RtcSender
     # send out
 
     for channel in @channels
-      channel.send(buf)
+      channel.send(buf).catch (err) ->
+        console.log('unable to send')
 
