@@ -1,4 +1,5 @@
 rtc = require('rtc-lib')
+{EventEmitter} = require('events')
 
 {Game} = require('./game')
 {Render} = require('./render')
@@ -13,7 +14,20 @@ data_channel_conf = {
   ordered: false
 }
 
-class exports.Bomber
+class BomberPeer extends EventEmitter
+
+  constructor: (@peer) ->
+    @name = @peer.status('name')
+
+    @peer.on 'left', () =>
+      @emit('left')
+
+    @peer.on 'status_changed', (status) =>
+      @name = status.name
+      @emit('name_changed')
+
+
+class exports.Bomber extends EventEmitter
 
   constructor: (room, @background, @draw) ->
     global.room =@room = new rtc.Room(@signaling_url(room), {auto_connect: false, stun: 'stun:stun.palava.tv'})
@@ -32,13 +46,15 @@ class exports.Bomber
     return base + room
 
 
-  join: (name, list) ->
-    local = @room.local
-    local.status('name', name)
+  setName: (name) ->
+    @room.local.status('name', name)
 
+
+  join: () ->
     @room.on 'peer_joined', (peer) =>
-      view = $('<li></li>').text(peer.status('name') || "unkown")
-      list.append(view)
+      bomber_peer = new BomberPeer(peer)
+
+      @emit('peer_joined', bomber_peer)
 
       id = peer.signaling.id
 
@@ -56,13 +72,12 @@ class exports.Bomber
                 player = new LocalPlayer()
                 input = new RtcInput(channel, player)
                 @game = new RtcGame(channel)
-                @render = new Render(@background[0], @draw[0], @game)
+                @emit('starting')
                 console.log('connected')
 
             peer.connect()
 
       peer.on 'left', () =>
-        view.remove()
         delete @peers[id]
 
       @peers[id] = peer
@@ -117,7 +132,7 @@ class exports.Bomber
 
       Promise.all(channel_promises).then (channels) =>
         sender = new RtcSender(@game, channels)
-        @render = new Render(@background[0], @draw[0], @game)
+        @emit('starting')
 
     else
       min_peer.message({type: 'start'})

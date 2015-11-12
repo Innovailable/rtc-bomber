@@ -1,26 +1,76 @@
 $ = require('jquery-browserify')
+cookie = require('js-cookie')
+uuid = require('node-uuid')
 
 {Bomber} = require('./bomber')
+{Render} = require('./render')
 
 $ () ->
   game_id = window.location.search
 
+  $status = $('#status')
+  $background = $('#background')
+  $draw = $('#draw')
+  $user_list = $('#user_list')
+  $name = $('#name')
+
   if game_id.length > 0
-    bomber = new Bomber(game_id, $('#background'), $('#draw'))
+    bomber = new Bomber(game_id, $background[0], $draw[0])
 
-    $('#start').attr('disabled', true)
+    # display peers
 
-    $('#join').click () ->
-      $('#login input').attr('disabled', true)
+    bomber.on 'peer_joined', (peer) ->
+      view = $('<li></li>')
 
-      bomber.join($('#name').val(), $('#user_list')).then () ->
-        $('#start').attr('disabled', false)
+      set_name = () ->
+        view.text(peer.name || 'unknown')
 
-    $('#start').click () ->
-      bomber.start()
-      $('#start').attr('disabled', true)
+      peer.on('name_changed', set_name)
+      set_name()
+
+      peer.on 'left', () ->
+        view.remove()
+
+      $user_list.append(view)
+
+    # game starts
+
+    bomber.on 'starting', () ->
+      $status.text("Game is running")
+
+      $('#start').hide()
       $('#draw').focus()
 
+      render = new Render($background[0], $draw[0], bomber.game)
+
+    # start button
+
+    $('#start').click () ->
+      $('#start').attr('disabled', true)
+      bomber.start()
+
+    # name handling
+
+    name = cookie.get('name') || 'unknown'
+
+    $name.val(name)
+    bomber.setName(name)
+
+    $name.change () ->
+      name = $name.val()
+
+      bomber.setName(name)
+      cookie.set('name', name)
+
+    # connect
+
+    $status.text("Connecting ...")
+    $('#start').attr('disabled', true)
+
+    bomber.join().then () ->
+      $status.text("Waiting for game to start")
+      $('#start').attr('disabled', false)
+
   else
-    console.log 'get a game!'
+    location.href = location.href + "?" + uuid.v4()
 

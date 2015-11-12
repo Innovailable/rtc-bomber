@@ -4,14 +4,15 @@
     %script(src="js/bomber.js"))
   %body
     %h1 rtc-bomber
-    #login
-      Name:
-      %input#name(type="text" value="horst")
-      %input#join(type="button" value="Join")
-    #users
-      Players:
-      %ul#user_list
-      %input#start(type="button" value="Start")
+    #status
     #game
-      %canvas#background(style="position: absolute; z-index: 1")
-      %canvas#draw(style="position: absolute; z-index: 2")
+      #login
+        Name:
+        %input#name(type="text" value="horst")
+      #users
+        Other Players:
+        %ul#user_list
+        %input#start(type="button" value="Start")
+      #game
+        %canvas#background(style="position: absolute; z-index: 1")
+        %canvas#draw(style="position: absolute; z-index: 2")
