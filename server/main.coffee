@@ -5,11 +5,11 @@ app = require('express')()
 # server js
 
 browserify = require('browserify-middleware')
-browserify.settings('transform', [require('coffeeify'), require('envify')])
-browserify.settings('extensions', ['.coffee'])
-browserify.settings('grep', /\.coffee$|\.js$/)
+browserify.settings('transform', [require('cjsxify'), require('envify')])
+browserify.settings('extensions', ['.coffee', '.cjsx'])
+browserify.settings('grep', /\.coffee$|\.js$|\.cjsx$/)
 
-app.get('/js/bomber.js', browserify(__dirname + '/../src/main.coffee'))
+app.get('/js/bomber.js', browserify(__dirname + '/../src/main.cjsx'))
 
 # signaling
 

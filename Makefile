@@ -3,7 +3,7 @@ VIEWS=$(wildcard views/*.haml)
 
 HTML_FILES=$(VIEWS:views/%.haml=out/%.html)
 
-MAIN_SRC=src/main.coffee
+MAIN_SRC=src/main.cjsx
 BUNDLE=out/js/bomber.js
 BUNDLE_MIN=out/js/bomber.min.js
 
@@ -20,7 +20,7 @@ clean:
 
 $(BUNDLE): $(SOURCES) Makefile
 	@mkdir -p `dirname $@`
-	node_modules/.bin/browserify --extension=".coffee" -t coffeeify -t envify -s rtc-bomber -d $(MAIN_SRC) -o $@
+	node_modules/.bin/browserify --extension=".coffee" --extension=".cjsx" -t cjsxify -t envify -s rtc-bomber -d $(MAIN_SRC) -o $@
 
 out/%.html: views/%.haml Makefile
 	@mkdir -p `dirname $@`

@@ -1,18 +1,7 @@
 %html
   %head
     %title rtc-bomber
-    %script(src="js/bomber.js"))
   %body
     %h1 rtc-bomber
-    #status
-    #game
-      #login
-        Name:
-        %input#name(type="text" value="horst")
-      #users
-        Other Players:
-        %ul#user_list
-        %input#start(type="button" value="Start")
-      #game
-        %canvas#background(style="position: absolute; z-index: 1")
-        %canvas#draw(style="position: absolute; z-index: 2")
+    #view
+    %script(src="js/bomber.js"))

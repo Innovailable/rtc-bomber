@@ -20,35 +20,29 @@ class exports.Render
   SCALE = 20
   HALF_SCALE = SCALE * 0.5
 
-  constructor: (@background, @draw, @game) ->
-    adjust_canvas = (canvas) =>
-      canvas.width = @game.field[0].length * SCALE
-      canvas.height = @game.field.length * SCALE
+  constructor: (@draw, @game) ->
+    @draw.width = @game.field[0].length * SCALE
+    @draw.height = @game.field.length * SCALE
 
-    adjust_canvas(@background)
-    @background_ctx = @background.getContext('2d')
-
-    adjust_canvas(@draw)
     @draw_ctx = @draw.getContext('2d')
 
     # periodically render dynamic stuff
 
-    setInterval () =>
+    @interval = setInterval () =>
       @render()
     , 40
 
-    # render field when needed
-
-    @game.on 'field_changed', =>
-      @render_background()
-
     # initial render
 
-    @render_background()
     @render()
 
-  render_background: () ->
-    ctx = @background_ctx
+  close: () ->
+    clearInterval(@interval)
+    # TODO: remove callback
+
+  render: () ->
+    ctx = @draw_ctx
+    ctx.clearRect(0, 0, @draw.width, @draw.height)
 
     for line, y in @game.field
       for cell, x in line
@@ -63,11 +57,6 @@ class exports.Render
         x_pos = x * SCALE
         y_pos = y * SCALE
         ctx.fillRect(x_pos, y_pos, SCALE, SCALE)
-
-
-  render: () ->
-    ctx = @draw_ctx
-    ctx.clearRect(0, 0, @draw.width, @draw.height)
 
     ctx.fillStyle = 'rgb(0,0,0)'
 
