@@ -4,4 +4,7 @@
   %body
     %h1 rtc-bomber
     #view
-    %script(src="js/bomber.js"))
+    - if @no_minify
+      %script(src="js/bomber.js")
+    - else
+      %script(src="js/bomber.min.js")

@@ -25,13 +25,15 @@ clean:
 	rm -rf out/
 
 $(BUNDLE): $(SOURCES) Makefile init
+
+$(BUNDLE): $(SOURCES) Makefile init
 	@mkdir -p `dirname $@`
-	node_modules/.bin/browserify --extension=".coffee" --extension=".cjsx" -t cjsxify -t envify -s rtc-bomber -d $(MAIN_SRC) -o $@
+	node_modules/.bin/browserify --extension=".coffee" --extension=".cjsx" -t cjsxify -t envify -s rtc-bomber -d $(MAIN_SRC) | node_modules/.bin/exorcist $@.map > $@
 
 out/%.html: views/%.haml Makefile init
 	@mkdir -p `dirname $@`
 	node_modules/.bin/haml-coffee -r -i $< -o $(basename $@)
 
 %.min.js: %.js Makefile init
-	node_modules/.bin/uglifyjs --compress --mangle -o $@ -- $<
+	node_modules/.bin/uglifyjs --compress --mangle -o $@ --source-map=$@.map --source-map-url=`basename $@`.map --in-source-map=$<.map -- $<
 

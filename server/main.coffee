@@ -26,6 +26,6 @@ app.set('views', './views')
 
 
 app.get '/', (req, res) ->
-  res.render('index.haml')
+  res.render('index.haml', {no_minify: true})
 
 app.listen(3000)
