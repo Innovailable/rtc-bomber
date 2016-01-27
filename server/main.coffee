@@ -1,6 +1,5 @@
-es = require('easy-signaling')
-
 app = require('express')()
+{CallingServer, WebsocketChannel} = require('calling-signaling')
 
 # server js
 
@@ -13,13 +12,12 @@ app.get('/js/bomber.js', browserify(__dirname + '/../src/main.cjsx'))
 
 # signaling
 
-hotel = new es.Hotel()
+calling_server = new CallingServer()
 
 require('express-ws')(app)
-app.ws '/signaling/*', (ws) ->
-  channel = new es.WebsocketChannel(ws)
-  room_id = ws.upgradeReq.url
-  hotel.create_guest(channel, room_id)
+app.ws '/signaling', (ws) ->
+  channel = new WebsocketChannel(ws)
+  calling_server.create_user(channel)
 
 # prepare haml
 
