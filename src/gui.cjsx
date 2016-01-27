@@ -16,7 +16,8 @@ ConnectScreen = React.createClass
       blocked: false
     }
 
-  connect: () ->
+  connect: (e) ->
+    e.preventDefault()
     @setState({blocked: true})
     @props.connect(@state.name)
 
@@ -25,9 +26,11 @@ ConnectScreen = React.createClass
 
   render: () ->
     return <div>
-      Name: 
-      <input type="input" value={@state.name} onChange={@handleNameChange} disabled={@state.blocked} />
-      <input type="button" onClick={@connect} value="Connect" disabled={@state.blocked || @state.name.length == 0} />
+      <form onSubmit={@connect}>
+        Name: 
+        <input type="input" ref={(i) -> i?.focus()} value={@state.name} onChange={@handleNameChange} disabled={@state.blocked} />
+        <input type="submit" value="Connect" disabled={@state.blocked || @state.name.length == 0} />
+      </form>
     </div>
 
 # global lobby
@@ -64,13 +67,16 @@ GameCreator = React.createClass
   handleTitleChange: (e) ->
     @setState({title: e.target.value})
 
-  create: () ->
+  create: (e) ->
+    e.preventDefault()
     @props.create(@state.title)
 
   render: () ->
     return <div>
-      <input type="input" value={@state.title} onChange={@handleTitleChange} />
-      <input type="button" value="Create" onClick={@create} disabled={@state.title.length == 0} />
+      <form onSubmit={@create}>
+        <input type="input" value={@state.title} onChange={@handleTitleChange} />
+        <input type="submit" value="Create" disabled={@state.title.length == 0} />
+      </form>
     </div>
 
 GameSelectionScreen = React.createClass
@@ -168,17 +174,44 @@ LobbyScreen = React.createClass
 
 # game screen
 
+PlayerList = React.createClass
+  render: () ->
+    players = @props.players.map (player) ->
+      return <li key={player.id}>
+        <span style={{
+          display: 'inline-block'
+          backgroundColor: player.color
+          width: '0.5em'
+          height: '0.5em'
+          border: '1px solid black'
+        }} /> {player.name}
+      </li>
+
+    return <ul>
+      {players}
+    </ul>
+
 GameScreen = React.createClass
   componentDidMount: () ->
-    @render = new Render(@refs.draw, @props.game)
+    @game_render = new Render(@refs.draw, @props.game)
 
   componentWillUnmount: () ->
-    @render.close()
+    @game_render.close()
 
   render: () ->
+    players = @props.players.map (player, i) =>
+      return {
+        id: player.id
+        name: player.name
+        color: Render.COLORS[i]
+      }
+
     return <div>
+      <h2>Players</h2>
+      <PlayerList players={players} />
+      <h2>Game</h2>
       <canvas ref="draw" />
-      <br />
+      <br /><br />
       <input type="button" value="Leave" onClick={@props.leave} />
     </div>
 

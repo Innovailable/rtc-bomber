@@ -16,9 +16,13 @@ rtc = require('rtc-lib')
 {RtcGame} = require('./rtc_game')
 levels = require('./levels')
 
-{ConnectScreen,GameSelectionScreen,LobbyScreen,GameScreen,ErrorScreen,FatalScreen} = require('./gui')
+gui = require('./gui')
 
-SIGNALING_URL = process.env.SIGNALING_URL || 'ws://localhost:8080'
+relative_websocket_url = (path="") ->
+  loc = window.location
+  return 'ws://' + loc.hostname + ':' + loc.port + '/' + path
+
+SIGNALING_URL = process.env.SIGNALING_URL || relative_websocket_url('signaling')
 GAME_ID = process.env.GAME_ID || 'rtc-bomber.innnovailable.eu'
 
 RTC_OPTIONS = {
@@ -26,9 +30,14 @@ RTC_OPTIONS = {
   stun: 'stun:stun.palava.tv'
 }
 
+DATACHANNEL_OPTIONS = {
+  ordered: false
+  maxRetransmits: 0
+}
+
 class HostSession
 
-  constructor: (@room, @peers) ->
+  constructor: (@room, @host, @peers) ->
     # create game
 
     game = new Game(levels.simple, @room.signaling.id)
@@ -39,8 +48,6 @@ class HostSession
 
     channel_promises = []
 
-    console.log(@room.peers)
-
     for {id} in @peers
       peer = @room.peers[id]
 
@@ -49,15 +56,12 @@ class HostSession
         game.addPlayer(new VoidPlayer())
         continue
 
-      console.log('adding', id)
-
-      channel_p = peer.addDataChannel({ordered: false}).then (channel) =>
+      channel_p = peer.addDataChannel(DATACHANNEL_OPTIONS).then (channel) =>
         game.addPlayer(new RtcPlayer(channel))
 
         return channel.connect().then () ->
           return channel
       .catch (err) ->
-        console.log('error in connect', err)
         return null
 
       peer.connect()
@@ -78,13 +82,14 @@ class HostSession
 
 class ClientSession
 
-  constructor: (@room, host, @peers) ->
-    peer = @room.peers[host]
+  constructor: (@room, @host, @peers) ->
+    peer = @room.peers[@host.id]
 
     if not peer?
-      return Promise.reject(new Error("Host of the game left"))
+      @connect_p = Promise.reject(new Error("Host of the game left"))
+      return
 
-    @connect_p = peer.addDataChannel({ordered: false}).then (channel) ->
+    @connect_p = peer.addDataChannel(DATACHANNEL_OPTIONS).then (channel) ->
       return channel.connect().then () ->
         player = new LocalPlayer()
         input = new RtcInput(channel, player)
@@ -152,7 +157,7 @@ machine = StateMachine({
     oninit: () ->
       @view = document.getElementById('view')
       channel = new rtc.signaling.WebSocketChannel(SIGNALING_URL)
-      @calling = new rtc.signaling.Calling(channel)
+      @calling = new rtc.signaling.Calling(channel, RTC_OPTIONS)
 
     onconnect: (event) ->
       @name = event.args[0]
@@ -165,8 +170,7 @@ machine = StateMachine({
     oncreate: (event) ->
       name = event.args[0]
 
-      signaling = @calling.room()
-      @room = new rtc.Room(signaling, RTC_OPTIONS)
+      @room = @calling.room()
 
       return @room.connect().then () =>
         return @room.signaling.setRoomStatus('name', name)
@@ -176,8 +180,7 @@ machine = StateMachine({
     onjoin: (event) ->
       room = event.args[0]
 
-      signaling = @calling.room(room)
-      @room = new rtc.Room(signaling, RTC_OPTIONS)
+      @room = @calling.room(room)
 
       return @room.connect()
 
@@ -199,12 +202,11 @@ machine = StateMachine({
       return @room.signaling.setRoomStatusSafe('game', game_state, undefined).then () =>
         return @room.signaling.unregister(GAME_ID)
       .then () =>
-        @session = new HostSession(@room, game_state.peers)
+        @session = new HostSession(@room, game_state.host, game_state.peers)
 
     onclient: () ->
       {host,peers} = @room.signaling.status.game
-      console.log(@room.signaling.status.game)
-      @session = new ClientSession(@room, host.id, peers)
+      @session = new ClientSession(@room, host, peers)
 
     onclose: () ->
       return @room.leave().then () =>
@@ -212,12 +214,12 @@ machine = StateMachine({
 
     onenteredstart: () ->
       name = cookie.get('name') || ''
-      ReactDOM.render(<ConnectScreen defaultName={name} connect={@connect} />, @view)
+      ReactDOM.render(<gui.ConnectScreen defaultName={name} connect={@connect} />, @view)
 
     onenteredselection: () ->
       return @calling.subscribe(GAME_ID).then (namespace) =>
         @namespace = namespace
-        ReactDOM.render(<GameSelectionScreen namespace={@namespace} join={@join} create={@create} />, @view)
+        ReactDOM.render(<gui.GameSelectionScreen namespace={@namespace} join={@join} create={@create} />, @view)
 
     onleaveselection: () ->
       return @namespace.unsubscribe().then () =>
@@ -248,20 +250,20 @@ machine = StateMachine({
         else
           @error('Sorry, the game started without you')
 
-      ReactDOM.render(<LobbyScreen game={@room} start={@host} leave={@close} />, @view)
+      ReactDOM.render(<gui.LobbyScreen game={@room} start={@host} leave={@close} />, @view)
 
     onenteredgame: () ->
-      console.log('in game')
       @session.game().then (game) =>
-        console.log(game)
-        ReactDOM.render(<GameScreen game={game} leave={@close} />, @view)
+        players = @session.peers.slice(0)
+        players.unshift(@session.host)
+        ReactDOM.render(<gui.GameScreen game={game} players={players} leave={@close} />, @view)
       .catch (err) =>
         console.log(err)
         @error('Unable to create game')
 
     onenterederror: (event) ->
       error = event.args[0]
-      ReactDOM.render(<ErrorScreen error={error} continue={@close} />, @view)
+      ReactDOM.render(<gui.ErrorScreen error={error} continue={@close} />, @view)
   }
 })
 

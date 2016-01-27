@@ -8,14 +8,13 @@ setPixelated = (context) ->
   context['webkitImageSmoothingEnabled'] = false; # Safari
   context['msImageSmoothingEnabled'] = false;     # IE
 
-player_colors = [
-  'rgb(255, 0, 0)'
-  'rgb(0, 255, 0)'
-  'rgb(0, 0, 255)'
-]
-
-
 class exports.Render
+
+  @COLORS = [
+    'rgb(255, 0, 0)'
+    'rgb(0, 255, 0)'
+    'rgb(0, 0, 255)'
+  ]
 
   SCALE = 20
   HALF_SCALE = SCALE * 0.5
@@ -70,7 +69,7 @@ class exports.Render
     for player in @game.players
       x_pos = player.x * SCALE
       y_pos = player.y * SCALE
-      ctx.fillStyle = player_colors[player.color]
+      ctx.fillStyle = Render.COLORS[player.color]
       ctx.beginPath()
       ctx.moveTo(x_pos + HALF_SCALE, y_pos)
       ctx.lineTo(x_pos + SCALE, y_pos + HALF_SCALE)
