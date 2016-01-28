@@ -92,7 +92,7 @@ class Game extends EventEmitter
 
 
   spawn_powerup: (x, y) ->
-    if @rng() < 0.1
+    if @rng() < 0.15
       if @rng() < 0.33
         type = Game.POWERUP_BOMB
       else

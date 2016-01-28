@@ -17,8 +17,8 @@ class exports.Render
   ]
 
   @POWERUP_COLORS = [
-    'rgb(255, 0, 0)'
     'rgb(0, 0, 0)'
+    'rgb(255, 0, 0)'
   ]
 
   SCALE = 20
