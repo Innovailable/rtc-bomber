@@ -23,6 +23,10 @@ Here are some random technical details you might or might not be interested in:
 
 ## Setup
 
+### Play Online
+
+You can play the game online [here](http://innovailable.github.io/rtc-bomber/).
+
 ### Integrated Server
 
 The game can be started using an integrated HTTP server which also contains the
@@ -46,3 +50,15 @@ An alternative way to use the game is to compile the static files. You will
 have to specify a signaling server URL on compile time.
 
     SIGNALING_URL=wss://calling.innovailable.eu make
+
+You can then upload the files from the `out/` directory to any server or use
+them locally.
+
+## TODO
+
+* actual graphics
+* more maps
+* private games
+* invite players
+* spectator mode
+

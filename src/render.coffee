@@ -16,8 +16,14 @@ class exports.Render
     'rgb(0, 0, 255)'
   ]
 
+  @POWERUP_COLORS = [
+    'rgb(255, 0, 0)'
+    'rgb(0, 0, 0)'
+  ]
+
   SCALE = 20
   HALF_SCALE = SCALE * 0.5
+  THIRD_SCALE = SCALE / 3
 
   constructor: (@draw, @game) ->
     @draw.width = @game.field[0].length * SCALE
@@ -56,6 +62,27 @@ class exports.Render
         x_pos = x * SCALE
         y_pos = y * SCALE
         ctx.fillRect(x_pos, y_pos, SCALE, SCALE)
+
+    for powerup in @game.powerups
+      x_pos = powerup.x * SCALE
+      y_pos = powerup.y * SCALE
+
+      ctx.fillStyle = '#66ccff'
+      ctx.fillStyle = 'rgb(120, 200, 255)'
+      ctx.beginPath()
+      ctx.moveTo(x_pos, y_pos)
+      ctx.lineTo(x_pos + SCALE, y_pos)
+      ctx.lineTo(x_pos + SCALE, y_pos + SCALE)
+      ctx.lineTo(x_pos, y_pos + SCALE)
+      ctx.fill()
+
+      ctx.fillStyle = Render.POWERUP_COLORS[powerup.type]
+      ctx.beginPath()
+      ctx.moveTo(x_pos + THIRD_SCALE, y_pos + THIRD_SCALE)
+      ctx.lineTo(x_pos + SCALE - THIRD_SCALE, y_pos + THIRD_SCALE)
+      ctx.lineTo(x_pos + SCALE - THIRD_SCALE, y_pos + SCALE - THIRD_SCALE)
+      ctx.lineTo(x_pos + THIRD_SCALE, y_pos + SCALE - THIRD_SCALE)
+      ctx.fill()
 
     ctx.fillStyle = 'rgb(0,0,0)'
 

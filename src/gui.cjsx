@@ -128,10 +128,10 @@ PeerList = React.createClass
     peers = @props.peers.map (peer) ->
       return <li key={peer.id}>{peer.name}</li>
 
-    return <div>
-      <h2>Other Players</h2>
-      <ul>{peers}</ul>
-    </div>
+    if peers.length > 0
+      return <ul>{peers}</ul>
+    else
+      return <div>No other players, yet</div>
 
 LobbyScreen = React.createClass
   getInitialState: () ->
@@ -167,7 +167,9 @@ LobbyScreen = React.createClass
     return <div>
       <h2>Game</h2>
       Name: {@props.game.signaling.status.name}
+      <h2>Other Players</h2>
       <PeerList peers={@state.peers} />
+      <br />
       <input type="button" value="Start" onClick={@props.start} />
       <input type="button" value="Leave" onClick={@props.leave} />
     </div>

@@ -35,6 +35,11 @@ class exports.RtcSender
       byte = 2 + x + y * @game.width
       view[byte] = (view[byte] & 0xf) | (value << 4)
 
+    # add powerups
+
+    for powerup in @game.powerups
+      extend_field(powerup.x, powerup.y, powerup.type)
+
     # add explosions
 
     for explosion in @game.explosions

@@ -35,6 +35,7 @@ class exports.RtcGame extends EventEmitter
     @players = []
     @explosions = []
     @bombs = []
+    @powerups = []
 
     for y in [0..@height-1]
       for x in [0..@width-1]
@@ -51,13 +52,16 @@ class exports.RtcGame extends EventEmitter
         special = (cur & 0xf0) >> 4
 
         if special
-          switch special
-            when 0xf
-              @bombs.push({x: x, y: y})
-            when 0xe
-              @explosions.push({x: x, y: y})
-            else
-              console.log 'unknown special stuff', special
+          if special < 2
+            @powerups.push({x: x, y: y, type: special})
+          else
+            switch special
+              when 0xf
+                @bombs.push({x: x, y: y})
+              when 0xe
+                @explosions.push({x: x, y: y})
+              else
+                console.log 'unknown special stuff', special
 
     player_count = view[index++]
 

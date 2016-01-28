@@ -37,6 +37,9 @@ class Game extends EventEmitter
   @MOVE_DOWN: 3
   @MOVE_LEFT: 4
 
+  @POWERUP_BOMB: 0
+  @POWERUP_EXPLOSION: 1
+
   constructor: (level, seed) ->
     @players = []
     @bombs = []
@@ -70,8 +73,8 @@ class Game extends EventEmitter
     player.x = spawn.x
     player.y = spawn.y
 
-    player.bombs = 2
-    player.splash = 2
+    player.bombs = 5
+    player.splash = 3
     player.color = @players.length
 
     @players.push(player)
@@ -88,9 +91,26 @@ class Game extends EventEmitter
     return false
 
 
-  tick: () ->
-    field_changed = false
+  spawn_powerup: (x, y) ->
+    if @rng() < 0.15
+      if @rng() < 0.5
+        type = Game.POWERUP_BOMB
+      else
+        type = Game.POWERUP_EXPLOSION
 
+      @powerups.push({
+        type: type
+        x: x
+        y: y
+      })
+
+      return true
+
+    else
+      return false
+
+
+  tick: () ->
     # PLAYER INPUT
 
     for player in @players
@@ -157,19 +177,32 @@ class Game extends EventEmitter
         when Game.MOVE_LEFT
           move('x', 'y', -1, (a, b) => @collision(a, b))
 
+      # tile the player is mostly on
+
+      round_x = Math.round(player.x)
+      round_y = Math.round(player.y)
+
+      # powerups
+
+      each @powerups, (powerup, del) ->
+        if powerup.x == round_x and powerup.y == round_y
+          switch powerup.type
+            when Game.POWERUP_EXPLOSION
+              player.splash += 1
+            when Game.POWERUP_BOMB
+              player.bombs += 1
+          del()
+
       # spawn bombs
 
       if player.wantsBomb() and player.bombs > 0
-        x = Math.round(player.x)
-        y = Math.round(player.y)
-
-        if not @collision(x, y)
+        if not @collision(round_x, round_y)
           bomb = {
             player: player
             ticks: BOMB_TICKS
             splash: player.splash
-            x: x
-            y: y
+            x: round_x
+            y: round_y
           }
 
           @bombs.push(bomb)
@@ -186,6 +219,14 @@ class Game extends EventEmitter
           # clear rocks
 
           explode = (x, y) =>
+            each @bombs, (bomb, del) ->
+              if bomb.x == x and bomb.y == y
+                bomb.ticks = Math.min(bomb.ticks, 10)
+
+            each @powerups, (powerup, del) ->
+              if powerup.x == x and powerup.y == y
+                del()
+
             @explosions.push({
               x: x
               y: y
@@ -207,8 +248,8 @@ class Game extends EventEmitter
               switch @field[y][x]
                 when Game.GRID_ROCK
                   @field[y][x] = Game.GRID_OPEN
-                  explode(x, y)
-                  field_changed = true
+                  if not @spawn_powerup(x, y)
+                    explode(x, y)
                   done = true
                 when Game.GRID_WALL
                   done = true
@@ -276,11 +317,6 @@ class Game extends EventEmitter
               player.kill()
               @players.splice(index, 1)
               break
-
-    # EVENTS
-
-    if field_changed
-      @emit('field_changed')
 
     @emit('ticked')
 
