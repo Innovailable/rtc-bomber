@@ -57,6 +57,7 @@ them locally.
 ## TODO
 
 * actual graphics
+* actual design
 * more maps
 * private games
 * invite players

@@ -15,6 +15,7 @@ class exports.RtcGame extends EventEmitter
     @explosions = []
     @bombs = []
     @players = []
+    @powerups = []
 
     @field = []
 
