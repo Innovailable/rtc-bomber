@@ -25,6 +25,7 @@ class exports.RtcGame extends EventEmitter
     @channel.on 'message', (buf) =>
       @parse(buf)
 
+
   parse: (buf) ->
     view = new Uint8Array(buf)
 
@@ -53,8 +54,8 @@ class exports.RtcGame extends EventEmitter
         special = (cur & 0xf0) >> 4
 
         if special
-          if special < 2
-            @powerups.push({x: x, y: y, type: special})
+          if special < 3
+            @powerups.push({x: x, y: y, type: special - 1})
           else
             switch special
               when 0xf

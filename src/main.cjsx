@@ -27,7 +27,7 @@ GAME_ID = process.env.GAME_ID || 'rtc-bomber.innnovailable.eu'
 
 RTC_OPTIONS = {
   auto_connect: false
-  stun: 'stun:stun.palava.tv'
+  stun: 'stun:innovailable.eu'
 }
 
 DATACHANNEL_OPTIONS = {

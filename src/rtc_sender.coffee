@@ -38,7 +38,7 @@ class exports.RtcSender
     # add powerups
 
     for powerup in @game.powerups
-      extend_field(powerup.x, powerup.y, powerup.type)
+      extend_field(powerup.x, powerup.y, powerup.type + 1)
 
     # add explosions
 
